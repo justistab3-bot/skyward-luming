@@ -6,6 +6,33 @@ English | [简体中文](README.zh-CN.md)
 
 Skyward is a recovery written in Rust, from scratch.
 
+> **This repository is Skyward for one phone: the Xiaomi Civi 5 Pro
+> (`luming`, `OS4.0.2.0.XOICNXM`, HyperOS 4 / Android 17).**
+>
+> It is a cut of [kirklin/skyward](https://github.com/kirklin/skyward) that
+> keeps only luming's configuration, so every push builds one image and
+> nothing else. What it takes to run the phone's own drivers, services and
+> keys on this phone is in [`devices/luming.toml`](devices/luming.toml); the
+> one thing worth knowing beyond that file:
+>
+> - **Data decryption goes through the embedded secure element, and that
+>   element is served by Qualcomm's secure element service**
+>   (`android.hardware.secure_element-service.qti`), which powers the NXP
+>   SN220T through the node the `nxp-nci` driver makes and reaches it
+>   through the secure world's `gpqese` application. The NXP NFC daemon
+>   declares the same `ISecureElement/eSE1` but registers only the chip's
+>   own services, so waiting for it leaves the weaver unstarted and the
+>   data partition closed.
+> - The weaver (`android.hardware.weaver-service.nxp-qti`) then reads the
+>   user's secret out of that element through Android's secure element
+>   service, which the recovery serves itself, so the order is: element
+>   service, then the recovery's own, then the weaver.
+>
+> Builds are made by [GitHub Actions](.github/workflows/build.yml): every
+> push publishes `skyward-<commit>-luming-OS4.0.2.0.XOICNXM.zip` as an
+> artifact, holding the whole `recovery` partition image of the active
+> slot, flashed as it is.
+
 <p align="center">
   <img src="assets/home.png" width="30%" alt="Home">
   <img src="assets/settings-dark.png" width="30%" alt="Settings in dark mode">

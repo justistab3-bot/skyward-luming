@@ -6,6 +6,28 @@
 
 Skyward 是使用 Rust 编写的 recovery，从零开始编写。
 
+> **这个仓库是跑在一台手机上的 Skyward：小米 Civi 5 Pro（`luming`，
+> `OS4.0.2.0.XOICNXM`，HyperOS 4 / Android 17）。**
+>
+> 它是 [kirklin/skyward](https://github.com/kirklin/skyward) 的裁剪版，只保留
+> luming 的配置，所以每次推送只构建一个镜像。让这台手机自己的驱动、服务
+> 和密钥跑起来需要什么，都写在 [`devices/luming.toml`](devices/luming.toml)
+> 里；除此之外只有一件事值得单独说明：
+>
+> - **data 解密走的是内置安全元件，而这个元件由高通的 secure element 服务
+>   提供**（`android.hardware.secure_element-service.qti`）：它通过 `nxp-nci`
+>   驱动建出的节点给 NXP SN220T 供电，再经由安全世界里的 `gpqese` 应用访问
+>   它。NXP 的 NFC 守护进程虽然在自己的描述里声明了同一个
+>   `ISecureElement/eSE1`，却只注册 NFC 芯片自己的服务，等它只会让 weaver
+>   起不来，data 分区继续锁着。
+> - 之后 weaver（`android.hardware.weaver-service.nxp-qti`）通过 recovery
+>   自己提供的 Android secure element 服务，从那个元件里读出用户的密钥。
+>   所以顺序是：安全元件服务、recovery 自己的服务、weaver。
+>
+> 构建由 [GitHub Actions](.github/workflows/build.yml) 完成：每次推送把
+> `skyward-<commit>-luming-OS4.0.2.0.XOICNXM.zip` 作为 artifact 发布，里面
+> 是当前 slot 的整个 `recovery` 分区镜像，原样刷入即可。
+
 <p align="center">
   <img src="assets/home.png" width="30%" alt="首页">
   <img src="assets/settings-dark.png" width="30%" alt="深色模式下的设置">
